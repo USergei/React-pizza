@@ -1,4 +1,5 @@
-import { useContext } from 'react'
+import { useContext, useRef, useCallback, useState } from 'react'
+import debounce from 'lodash.debounce'
 
 import { SearchContext } from '../../App'
 import styles from './Search.module.scss'
@@ -6,21 +7,42 @@ import search from '../../assets/img/search.svg'
 import clear from '../../assets/img/clear-icon.svg'
 
 const Search = () => {
-  const { searchValue, setSearchValue } = useContext(SearchContext)
+  const [value, setValue] = useState('')
+  const { setSearchValue } = useContext(SearchContext)
+  const inputRef = useRef()
+
+  const updateSearchValue = useCallback(
+    debounce((str) => {
+      setSearchValue(str)
+    }, 500),
+    [],
+  )
+
+  const onInputChage = (event) => {
+    setValue(event.target.value)
+    updateSearchValue(event.target.value)
+  }
+
+  const onClickClear = () => {
+    setSearchValue('')
+    setValue('')
+    inputRef.current.focus()
+  }
 
   return (
     <div className={styles.root}>
       <img className={styles.icon} src={search} alt="search" />
       <input
         className={styles.input}
-        value={searchValue}
-        onChange={(e) => setSearchValue(e.target.value)}
+        ref={inputRef}
+        value={value}
+        onChange={onInputChage}
         placeholder="Поиск пиццы..."
       />
-      {searchValue && (
+      {value && (
         <img
           className={styles.clearIcon}
-          onClick={() => setSearchValue('')}
+          onClick={() => onClickClear()}
           src={clear}
           alt="clear icon"
         />
