@@ -1,7 +1,8 @@
 import { useState, useEffect, useContext } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import axios from 'axios'
 
-import { setCategoryId } from '../redux/slices/filterSlice'
+import { setCategoryId, setCurrentPage } from '../redux/slices/filterSlice'
 
 import { SearchContext } from '../App'
 import Categories from '../components/Categories'
@@ -11,16 +12,19 @@ import { Skeleton } from '../components/PizzaBlock/Skeleton'
 import Pagination from '../components/Pagination'
 
 const Home = () => {
-  const { categoryId, sort } = useSelector((state) => state.filterSlice)
+  const { categoryId, sort, currentPage } = useSelector((state) => state.filterSlice)
   const dispatch = useDispatch()
 
   const [items, setItems] = useState([])
   const [isLoading, setIsLoading] = useState(true)
-  const [currentPage, setCurrentPage] = useState(1)
   const { searchValue } = useContext(SearchContext)
 
   const onChangeCategory = (id) => {
     dispatch(setCategoryId(id))
+  }
+
+  const onChangePage = (number) => {
+    dispatch(setCurrentPage(number))
   }
 
   useEffect(() => {
@@ -31,16 +35,18 @@ const Home = () => {
     const category = categoryId > 0 ? `category=${categoryId}` : ''
     const search = searchValue ? `&search=${searchValue}` : ''
 
-    fetch(
-      `https://64ad0680b470006a5ec53693.mockapi.io/items?page=${currentPage}&limit=4&${category}&sortBy=${sortBy}&order=${order}${search} `,
-    )
-      .then((res) => res.json())
-      .then((arr) => {
-        setItems(arr)
+    axios
+      .get(
+        `https://64ad0680b470006a5ec53693.mockapi.io/items?page=${currentPage}&limit=4&${category}&sortBy=${sortBy}&order=${order}${search} `,
+      )
+      .then((res) => {
+        setItems(res.data)
         setIsLoading(false)
       })
+
     window.scrollTo(0, 0)
   }, [categoryId, sort.sortProperty, searchValue, currentPage])
+
   return (
     <div className="container">
       <div className="content__top">
@@ -53,7 +59,7 @@ const Home = () => {
           ? [...new Array(10)].map((_, index) => <Skeleton key={index} />)
           : items.map((obj) => <PizzaBlock key={obj.id} {...obj} />)}
       </div>
-      <Pagination onChangePage={(number) => setCurrentPage(number)} />
+      <Pagination currentPage={currentPage} onChangePage={onChangePage} />
     </div>
   )
 }
