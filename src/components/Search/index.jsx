@@ -12,7 +12,7 @@ const Search = () => {
   const inputRef = useRef()
 
   const updateSearchValue = useCallback(
-    debounce((str) => {
+    debounce(str => {
       setSearchValue(str)
     }, 500),
     [],

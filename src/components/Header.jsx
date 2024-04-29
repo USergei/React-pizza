@@ -5,7 +5,7 @@ import Search from './Search'
 import logoSvg from '../assets/img/pizza-logo.svg'
 
 const Header = () => {
-  const { totalPrice, items } = useSelector((state) => state.cartSlice)
+  const { totalPrice, items } = useSelector(state => state.cartSlice)
 
   const totalCount = items.reduce((sum, item) => sum + item.count, 0)
 

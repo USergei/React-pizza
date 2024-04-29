@@ -8,7 +8,7 @@ const CartItem = ({ id, count, title, price, imageUrl, type, size }) => {
     dispatch(
       addItem({
         id,
-      }),
+      })
     )
   }
 
