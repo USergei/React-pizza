@@ -15,7 +15,7 @@ const Sort = () => {
   const dispatch = useDispatch()
   const sortRef = useRef()
   const [open, setOpen] = useState(false)
-  const sort = useSelector((state) => state.filterSlice.sort)
+  const sort = useSelector(state => state.filterSlice.sort)
 
   const onClickListItem = (obj) => {
     dispatch(setSort(obj))

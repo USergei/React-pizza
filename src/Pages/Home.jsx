@@ -1,10 +1,10 @@
-import { useState, useEffect, useContext, useRef } from 'react'
+import { useEffect, useContext, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
 import qs from 'qs'
 
 import { setCategoryId, setCurrentPage, setFilters } from '../redux/slices/filterSlice'
+import { fetchPizzas } from '../redux/slices/pizzaSlice'
 
 import { SearchContext } from '../App'
 import Categories from '../components/Categories'
@@ -19,10 +19,9 @@ const Home = () => {
   const dispatch = useDispatch()
   const isSearch = useRef(false)
   const isMounted = useRef(false)
-  const { categoryId, sort, currentPage } = useSelector((state) => state.filterSlice)
+  const { categoryId, sort, currentPage } = useSelector(state => state.filterSlice)
+  const { items, status } = useSelector(state => state.pizzaSlice)
 
-  const [items, setItems] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
   const { searchValue } = useContext(SearchContext)
 
   const onChangeCategory = (id) => {
@@ -33,22 +32,13 @@ const Home = () => {
     dispatch(setCurrentPage(number))
   }
 
-  const fetchPizzas = () => {
-    setIsLoading(true)
-
+  const getPizzas = async () => {
     const order = sort.sortProperty.includes('-') ? 'asc' : 'desc'
     const sortBy = sort.sortProperty.replace('-', '')
     const category = categoryId > 0 ? `category=${categoryId}` : ''
     const search = searchValue ? `&search=${searchValue}` : ''
 
-    axios
-      .get(
-        `https://64ad0680b470006a5ec53693.mockapi.io/items?page=${currentPage}&limit=4&${category}&sortBy=${sortBy}&order=${order}${search} `,
-      )
-      .then((res) => {
-        setItems(res.data)
-        setIsLoading(false)
-      })
+    dispatch(fetchPizzas({ order, sortBy, category, search, currentPage }))
   }
 
   // Если изменили параметры и был первый рендер
@@ -80,7 +70,6 @@ const Home = () => {
       )
       isSearch.current = true
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Если был первый рендер, то запрашиваем пиццы
@@ -88,7 +77,7 @@ const Home = () => {
     window.scrollTo(0, 0)
 
     if (!isSearch.current) {
-      fetchPizzas()
+      getPizzas()
     }
     isSearch.current = false
   }, [categoryId, sort.sortProperty, searchValue, currentPage])
@@ -100,11 +89,18 @@ const Home = () => {
         <Sort />
       </div>
       <h2 className="content__title">Все пиццы</h2>
-      <div className="content__items">
-        {isLoading
-          ? [...new Array(10)].map((_, index) => <Skeleton key={index} />)
-          : items.map((obj) => <PizzaBlock key={obj.id} {...obj} />)}
-      </div>
+      {status === 'error' ? (
+        <div className="content__error-info">
+          <h2>Произошла ошибка</h2>
+          <p>Не удалось получить пиццы. Попробуйте повторить попытку позже или изменить запрос</p>
+        </div>
+      ) : (
+        <div className="content__items">
+          {status === 'loading'
+            ? [...new Array(4)].map((_, index) => <Skeleton key={index} />)
+            : items.map((obj) => <PizzaBlock key={obj.id} {...obj} />)}
+        </div>
+      )}
       <Pagination currentPage={currentPage} onChangePage={onChangePage} />
     </div>
   )

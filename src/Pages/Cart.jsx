@@ -6,7 +6,7 @@ import CartEmpty from '../components/CartEmpty'
 
 const Cart = () => {
   const dispatch = useDispatch()
-  const { items, totalPrice } = useSelector((state) => state.cartSlice)
+  const { items, totalPrice } = useSelector(state => state.cartSlice)
   const totalCount = items.reduce((sum, item) => sum + item.count, 0)
 
   const onClickClear = () => {
