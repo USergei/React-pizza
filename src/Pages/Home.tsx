@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import qs from 'qs'
@@ -26,9 +26,9 @@ const Home: React.FC = () => {
     dispatch(setCategoryId(id))
   }
 
-  const onChangePage = (number: number) => {
+  const onChangePage = useCallback((number: number) => {
     dispatch(setCurrentPage(number))
-  }
+  }, [])
 
   const getPizzas = async () => {
     const order = sort.sortProperty.includes('-') ? 'asc' : 'desc'
@@ -94,7 +94,7 @@ const Home: React.FC = () => {
     <div className="container">
       <div className="content__top">
         <Categories value={categoryId} onChangeCategory={onChangeCategory} />
-        <Sort />
+        <Sort  value={sort} />
       </div>
       <h2 className="content__title">Все пиццы</h2>
       {status === 'error' ? (
